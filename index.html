@@ -1,91 +1,133 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>이제 귀여워</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이제 귀여워 — Responsive</title>
     <style>
-        :root{
-            --count: 160;
-            --min-size: 14;
-            --max-size: 96;
-        }
-        html,body{height:100%;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Nanum Gothic", "Noto Sans KR", sans-serif}
-        body{
-            background: radial-gradient(1200px 600px at 10% 20%, #fff1fb, transparent),
-                        radial-gradient(800px 400px at 90% 80%, #f0fbff, transparent),
-                        linear-gradient(135deg,#ffefef 0%, #fff9f0 50%, #f0fff6 100%);
-            overflow:hidden;
-            -webkit-font-smoothing:antialiased;
-            -moz-osx-font-smoothing:grayscale;
-            color:#222;
-        }
-        /* 전체 타일을 담는 레이어 */
-        .wall{position:fixed;inset:0;pointer-events:none}
-        .tile{
-            position:absolute;
-            white-space:nowrap;
-            will-change:transform,opacity;
-            pointer-events:none;
-            font-weight:700;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            mix-blend-mode:screen;
-            transform-origin:center;
-            opacity:0.95;
-        }
+    :root{
+        --count: 160;
+        --min-size: 14;
+        --max-size: 96;
+        --bg-blur: 8px;
+        --container-max: 1100px;
+        --gap: 18px;
+        --accent: #ff8dc7;
+    }
+    @media (max-width:1200px){ :root{ --count:110; --max-size:72; } }
+    @media (max-width:900px){  :root{ --count:72; --max-size:56;  --min-size:12; } }
+    @media (max-width:480px){  :root{ --count:36; --max-size:36;  --min-size:10; } }
 
-        /* 떠다니는 애니메이션 */
-        @keyframes floaty{
-            0%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
-            50%{transform: translate3d(calc(var(--tx) + var(--dx)), calc(var(--ty) - var(--dy)), 0) rotate(calc(var(--r) + 6deg));}
-            100%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
-        }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Nanum Gothic", "Noto Sans KR", sans-serif;-webkit-font-smoothing:antialiased}
+    body{
+        min-height:100vh;
+        background: radial-gradient(1200px 600px at 10% 20%, #fff1fb, transparent),
+                    radial-gradient(800px 400px at 90% 80%, #f0fbff, transparent),
+                    linear-gradient(135deg,#ffefef 0%, #fff9f0 50%, #f0fff6 100%);
+        color:#1a1a1a;
+        overflow-x:hidden;
+    }
 
-        /* 마우스 트레일 */
-        .trail{position:fixed;left:0;top:0;pointer-events:none;mix-blend-mode:overlay}
-        .trail .dot{
-            position:absolute;width:18px;height:18px;border-radius:50%;
-            background:linear-gradient(135deg,#ff8dc7,#ffd37a);
-            transform:translate(-50%,-50%);opacity:0.9;filter:blur(.6px);
-            transition:transform .12s linear,opacity .35s linear;
-        }
+    .wall{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .tile{
+        position:absolute;white-space:nowrap;will-change:transform,opacity;pointer-events:none;
+        font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,0.06);mix-blend-mode:screen;transform-origin:center;opacity:0.95;
+    }
 
-        /* 컨트롤 버튼 (선택사항) */
-        .ui{
-            position:fixed;right:14px;bottom:14px;z-index:9999;
-            background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);
-            border-radius:12px;padding:8px 10px;font-size:13px;color:#333;
-            box-shadow:0 6px 18px rgba(0,0,0,0.08);
-            pointer-events:auto;
-        }
-        .ui button{border:0;background:#ff8dc7;color:white;padding:6px 10px;border-radius:8px;cursor:pointer}
+    @keyframes floaty{
+        0%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
+        50%{transform: translate3d(calc(var(--tx) + var(--dx)), calc(var(--ty) - var(--dy)), 0) rotate(calc(var(--r) + 6deg));}
+        100%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
+    }
+
+    .trail{position:fixed;left:0;top:0;pointer-events:none;mix-blend-mode:overlay;z-index:0}
+
+    .container{max-width:var(--container-max);margin:0 auto;padding:28px}
+    .site-header{position:fixed;left:0;right:0;top:0;z-index:5;background:linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.45));backdrop-filter:blur(calc(var(--bg-blur)));box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+    .site-header .container{display:flex;align-items:center;justify-content:space-between}
+    .logo{margin:0;font-size:18px;color:#ff477f}
+    .nav .btn{border:0;background:var(--accent);color:white;padding:8px 12px;border-radius:10px;cursor:pointer}
+
+    .main{padding-top:96px;padding-bottom:80px;z-index:3;position:relative}
+    .hero{background:rgba(255,255,255,0.6);padding:28px;border-radius:14px;box-shadow:0 8px 30px rgba(18,18,18,0.06)}
+    .hero h2{margin:0 0 10px;font-size:clamp(20px,3.6vw,34px)}
+    .hint{opacity:0.75;font-size:13px}
+
+    .content-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-top:18px}
+    .card{background:rgba(255,255,255,0.55);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+    .card h3{margin:0 0 6px}
+
+    .site-footer{position:relative;z-index:3;padding:24px 0;text-align:center;color:#6b6b6b}
+
+    @media (max-width:900px){
+        .content-cards{grid-template-columns:repeat(2,1fr)}
+        .container{padding:20px}
+        .site-header .container{padding:6px 0}
+    }
+    @media (max-width:480px){
+        .content-cards{grid-template-columns:1fr}
+        .hero{padding:18px}
+        .main{padding-top:84px}
+        .logo{font-size:16px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+        .tile{animation:none !important; transition:none !important}
+    }
     </style>
 </head>
 <body>
+    <!-- 배경 도배 레이어 -->
     <div class="wall" id="wall" aria-hidden="true"></div>
-    <canvas class="trail" id="trail"></canvas>
+    <canvas class="trail" id="trail" aria-hidden="true"></canvas>
 
-    <div class="ui" aria-hidden="true">
-        <button id="regen">다시 도배</button>
-    </div>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="logo">이제 귀여워</h1>
+            <nav class="nav">
+                <button id="regen" class="btn">다시 도배</button>
+            </nav>
+        </div>
+    </header>
+
+        
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© 2025 이제 귀여워 · 반응형 데모</small>
+        </div>
+    </footer>
 
     <script>
-    // 설정
+    // 반응형 도배 스크립트 (index.html 내부 포함)
     const TEXT = "이제 귀여워";
     const wall = document.getElementById('wall');
-    const COUNT = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--count')) || 140;
+    const regenBtn = document.getElementById('regen');
+    const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 창 크기 기준으로 타일 생성
-    function makeTiles(n=COUNT){
+    function getCount(){
+        const v = getComputedStyle(document.documentElement).getPropertyValue('--count');
+        return parseInt(v) || 100;
+    }
+    function getMinMax(){
+        const min = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--min-size')) || 12;
+        const max = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-size')) || 72;
+        return {min, max};
+    }
+
+    function randRange(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function makeTiles(n=getCount()){
         wall.innerHTML = '';
         const w = innerWidth, h = innerHeight;
-        for(let i=0;i<n;i++){
+        const {min, max} = getMinMax();
+        const total = Math.max(6, n);
+        for(let i=0;i<total;i++){
             const el = document.createElement('div');
             el.className = 'tile';
             el.textContent = TEXT;
-            // 무작위 위치/크기/색/회전/애니메이션 값
-            const size = randRange(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--min-size')), parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-size')));
+            const size = randRange(min, max);
             const x = Math.random()*w;
             const y = Math.random()*h;
             const r = (Math.random()*60-30).toFixed(2)+'deg';
@@ -102,59 +144,57 @@
             el.style.setProperty('--r', r);
             el.style.setProperty('--dx', dx);
             el.style.setProperty('--dy', dy);
-            el.style.animation = `floaty ${randRange(6,18)}s cubic-bezier(.2,.8,.2,1) ${Math.random()*-10}s infinite`;
-            // 약간씩 불투명도 차이
-            el.style.opacity = (0.65 + Math.random()*0.45).toFixed(2);
+            if(!prefersReducedMotion){
+                el.style.animation = `floaty ${randRange(6,18)}s cubic-bezier(.2,.8,.2,1) ${Math.random()*-10}s infinite`;
+            }
+            el.style.opacity = (0.6 + Math.random()*0.45).toFixed(2);
             wall.appendChild(el);
         }
     }
 
-    function randRange(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
-    // 리사이즈 시 다시 배치 (성능 위해 디바운스)
     let resizeTimer;
     addEventListener('resize',()=>{
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(()=> makeTiles(),120);
     });
 
-    // 마우스 트레일 캔버스
     const canvas = document.getElementById('trail');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext && canvas.getContext('2d');
     let dots = [];
-    function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+    function resizeCanvas(){ if(!ctx) return; canvas.width = innerWidth; canvas.height = innerHeight; }
     resizeCanvas();
     addEventListener('resize', resizeCanvas);
 
-    addEventListener('mousemove', e=>{
-        // spawn 작은 원들
-        dots.push({x:e.clientX,y:e.clientY, r: randRange(6,18), life: 40, hue: Math.random()*360});
-        if(dots.length>120) dots.splice(0, dots.length-80);
-    });
+    if(ctx){
+        addEventListener('pointermove', e=>{
+            dots.push({x:e.clientX,y:e.clientY, r: randRange(6,18), life: 40, hue: Math.random()*360});
+            if(dots.length>120) dots.splice(0, dots.length-80);
+        });
 
-    function tick(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        for(let i=dots.length-1;i>=0;i--){
-            const d = dots[i];
-            d.life--;
-            d.y -= 0.5;
-            const alpha = Math.max(0, d.life/40);
-            ctx.beginPath();
-            const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r);
-            g.addColorStop(0, `hsla(${d.hue},90%,70%,${alpha})`);
-            g.addColorStop(1, `hsla(${d.hue},90%,60%,0)`);
-            ctx.fillStyle = g;
-            ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
-            ctx.fill();
-            if(d.life<=0) dots.splice(i,1);
+        function tick(){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            for(let i=dots.length-1;i>=0;i--){
+                const d = dots[i];
+                d.life--;
+                d.y -= 0.5;
+                const alpha = Math.max(0, d.life/40);
+                ctx.beginPath();
+                const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r);
+                g.addColorStop(0, `hsla(${d.hue},90%,70%,${alpha})`);
+                g.addColorStop(1, `hsla(${d.hue},90%,60%,0)`);
+                ctx.fillStyle = g;
+                ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+                ctx.fill();
+                if(d.life<=0) dots.splice(i,1);
+            }
+            requestAnimationFrame(tick);
         }
-        requestAnimationFrame(tick);
+        if(!prefersReducedMotion) tick();
     }
-    tick();
 
-    // 클릭하면 하트 폭발
-    addEventListener('click', e=>{
-        for(let i=0;i<18;i++){
+    addEventListener('pointerdown', e=>{
+        const count = prefersReducedMotion ? 6 : 18;
+        for(let i=0;i<count;i++){
             const el = document.createElement('div');
             el.textContent = TEXT;
             el.style.position='fixed';
@@ -163,9 +203,10 @@
             el.style.pointerEvents='none';
             el.style.fontWeight='800';
             el.style.color = `hsl(${randRange(0,360)} 90% ${randRange(60,88)}%)`;
-            el.style.fontSize = randRange(18,44)+'px';
+            el.style.fontSize = randRange(14,40)+'px';
             el.style.transform = `translate(-50%,-50%) rotate(${randRange(-60,60)}deg)`;
             el.style.transition = `transform 900ms cubic-bezier(.2,.8,.2,1), opacity 900ms`;
+            el.style.zIndex = 4;
             document.body.appendChild(el);
             requestAnimationFrame(()=>{
                 const tx = randRange(-220,220), ty = randRange(-200,-30);
@@ -176,12 +217,10 @@
         }
     });
 
-    // UI: 다시 도배
-    document.getElementById('regen').addEventListener('click', ()=> makeTiles());
+    if(regenBtn) regenBtn.addEventListener('click', ()=> makeTiles());
 
-    // 초기 생성
-    makeTiles();
-
+    document.addEventListener('DOMContentLoaded', ()=> makeTiles());
+    window.addEventListener('load', ()=> makeTiles());
     </script>
 </body>
 </html>
