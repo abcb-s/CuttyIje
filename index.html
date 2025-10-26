@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>이제 귀여워</title>
+    <style>
+        :root{
+            --count: 160;
+            --min-size: 14;
+            --max-size: 96;
+        }
+        html,body{height:100%;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Nanum Gothic", "Noto Sans KR", sans-serif}
+        body{
+            background: radial-gradient(1200px 600px at 10% 20%, #fff1fb, transparent),
+                        radial-gradient(800px 400px at 90% 80%, #f0fbff, transparent),
+                        linear-gradient(135deg,#ffefef 0%, #fff9f0 50%, #f0fff6 100%);
+            overflow:hidden;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            color:#222;
+        }
+        /* 전체 타일을 담는 레이어 */
+        .wall{position:fixed;inset:0;pointer-events:none}
+        .tile{
+            position:absolute;
+            white-space:nowrap;
+            will-change:transform,opacity;
+            pointer-events:none;
+            font-weight:700;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            mix-blend-mode:screen;
+            transform-origin:center;
+            opacity:0.95;
+        }
+
+        /* 떠다니는 애니메이션 */
+        @keyframes floaty{
+            0%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
+            50%{transform: translate3d(calc(var(--tx) + var(--dx)), calc(var(--ty) - var(--dy)), 0) rotate(calc(var(--r) + 6deg));}
+            100%{transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r));}
+        }
+
+        /* 마우스 트레일 */
+        .trail{position:fixed;left:0;top:0;pointer-events:none;mix-blend-mode:overlay}
+        .trail .dot{
+            position:absolute;width:18px;height:18px;border-radius:50%;
+            background:linear-gradient(135deg,#ff8dc7,#ffd37a);
+            transform:translate(-50%,-50%);opacity:0.9;filter:blur(.6px);
+            transition:transform .12s linear,opacity .35s linear;
+        }
+
+        /* 컨트롤 버튼 (선택사항) */
+        .ui{
+            position:fixed;right:14px;bottom:14px;z-index:9999;
+            background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);
+            border-radius:12px;padding:8px 10px;font-size:13px;color:#333;
+            box-shadow:0 6px 18px rgba(0,0,0,0.08);
+            pointer-events:auto;
+        }
+        .ui button{border:0;background:#ff8dc7;color:white;padding:6px 10px;border-radius:8px;cursor:pointer}
+    </style>
+</head>
+<body>
+    <div class="wall" id="wall" aria-hidden="true"></div>
+    <canvas class="trail" id="trail"></canvas>
+
+    <div class="ui" aria-hidden="true">
+        <button id="regen">다시 도배</button>
+    </div>
+
+    <script>
+    // 설정
+    const TEXT = "이제 귀여워";
+    const wall = document.getElementById('wall');
+    const COUNT = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--count')) || 140;
+
+    // 창 크기 기준으로 타일 생성
+    function makeTiles(n=COUNT){
+        wall.innerHTML = '';
+        const w = innerWidth, h = innerHeight;
+        for(let i=0;i<n;i++){
+            const el = document.createElement('div');
+            el.className = 'tile';
+            el.textContent = TEXT;
+            // 무작위 위치/크기/색/회전/애니메이션 값
+            const size = randRange(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--min-size')), parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-size')));
+            const x = Math.random()*w;
+            const y = Math.random()*h;
+            const r = (Math.random()*60-30).toFixed(2)+'deg';
+            const dx = (Math.random()*16-8).toFixed(2)+'px';
+            const dy = (Math.random()*36+6).toFixed(2)+'px';
+            const hue = Math.floor(Math.random()*360);
+            const light = randRange(48,92);
+            el.style.fontSize = size+'px';
+            el.style.left = x+'px';
+            el.style.top = y+'px';
+            el.style.color = `hsl(${hue} 80% ${light}%)`;
+            el.style.setProperty('--tx', '0px');
+            el.style.setProperty('--ty', '0px');
+            el.style.setProperty('--r', r);
+            el.style.setProperty('--dx', dx);
+            el.style.setProperty('--dy', dy);
+            el.style.animation = `floaty ${randRange(6,18)}s cubic-bezier(.2,.8,.2,1) ${Math.random()*-10}s infinite`;
+            // 약간씩 불투명도 차이
+            el.style.opacity = (0.65 + Math.random()*0.45).toFixed(2);
+            wall.appendChild(el);
+        }
+    }
+
+    function randRange(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    // 리사이즈 시 다시 배치 (성능 위해 디바운스)
+    let resizeTimer;
+    addEventListener('resize',()=>{
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(()=> makeTiles(),120);
+    });
+
+    // 마우스 트레일 캔버스
+    const canvas = document.getElementById('trail');
+    const ctx = canvas.getContext('2d');
+    let dots = [];
+    function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+    resizeCanvas();
+    addEventListener('resize', resizeCanvas);
+
+    addEventListener('mousemove', e=>{
+        // spawn 작은 원들
+        dots.push({x:e.clientX,y:e.clientY, r: randRange(6,18), life: 40, hue: Math.random()*360});
+        if(dots.length>120) dots.splice(0, dots.length-80);
+    });
+
+    function tick(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(let i=dots.length-1;i>=0;i--){
+            const d = dots[i];
+            d.life--;
+            d.y -= 0.5;
+            const alpha = Math.max(0, d.life/40);
+            ctx.beginPath();
+            const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r);
+            g.addColorStop(0, `hsla(${d.hue},90%,70%,${alpha})`);
+            g.addColorStop(1, `hsla(${d.hue},90%,60%,0)`);
+            ctx.fillStyle = g;
+            ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+            ctx.fill();
+            if(d.life<=0) dots.splice(i,1);
+        }
+        requestAnimationFrame(tick);
+    }
+    tick();
+
+    // 클릭하면 하트 폭발
+    addEventListener('click', e=>{
+        for(let i=0;i<18;i++){
+            const el = document.createElement('div');
+            el.textContent = TEXT;
+            el.style.position='fixed';
+            el.style.left = e.clientX+'px';
+            el.style.top = e.clientY+'px';
+            el.style.pointerEvents='none';
+            el.style.fontWeight='800';
+            el.style.color = `hsl(${randRange(0,360)} 90% ${randRange(60,88)}%)`;
+            el.style.fontSize = randRange(18,44)+'px';
+            el.style.transform = `translate(-50%,-50%) rotate(${randRange(-60,60)}deg)`;
+            el.style.transition = `transform 900ms cubic-bezier(.2,.8,.2,1), opacity 900ms`;
+            document.body.appendChild(el);
+            requestAnimationFrame(()=>{
+                const tx = randRange(-220,220), ty = randRange(-200,-30);
+                el.style.transform = `translate(${tx}px, ${ty}px) rotate(${randRange(-100,100)}deg) scale(${(Math.random()*0.8+0.6).toFixed(2)})`;
+                el.style.opacity = '0';
+            });
+            setTimeout(()=> el.remove(), 950);
+        }
+    });
+
+    // UI: 다시 도배
+    document.getElementById('regen').addEventListener('click', ()=> makeTiles());
+
+    // 초기 생성
+    makeTiles();
+
+    </script>
+</body>
+</html>
